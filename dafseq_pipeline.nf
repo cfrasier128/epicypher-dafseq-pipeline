@@ -10,7 +10,8 @@ params.minimum_msp_dist = '10'
 
 process align_reads{
     publishDir "$params.outdir/1_Aligned-NotLabelled", mode: 'copy'
-    label 'large'
+    cpus 8
+    memory '16GB'
     container 'cfrasier/epi-dafseq:latest'
 
     input:
@@ -26,7 +27,8 @@ process align_reads{
 
 process label_reads{
     publishDir "$params.outdir/2_Aligned-Labelled", mode: 'copy'
-    label 'large'
+    cpus 8
+    memory '16GB'
     container 'cfrasier/epi-dafseq:latest'
 
     input:
@@ -41,7 +43,8 @@ process label_reads{
 
 process align_labelled_reads{
     publishDir "$params.outdir/3_Aligned-Labelled-Aligned", mode: 'copy'
-    label 'large'
+    cpus 8
+    memory '16GB'
     container 'cfrasier/epi-dafseq:latest'
 
     input:
@@ -57,7 +60,8 @@ process align_labelled_reads{
 
 process convert_6ma {
     publishDir "$params.outdir/3_Aligned-Labelled-Aligned", mode: 'copy'
-    label 'large'
+    cpus 8
+    memory '16GB'
     container 'cfrasier/epi-fiberseq:latest'
 
     input:
@@ -72,7 +76,8 @@ process convert_6ma {
 
 process add_nucleosomes {
     publishDir "$params.outdir/3_Aligned-Labelled-Aligned", mode: 'copy'
-    label 'large'
+    cpus 8
+    memory '16GB'
     container 'cfrasier/epi-fiberseq:latest'
 
     input:
@@ -87,7 +92,8 @@ process add_nucleosomes {
 
 process sort_index_bams {
     publishDir "$params.outdir/4_Final-bams", mode: 'copy'
-    label 'medium'
+    cpus 4
+    memory '8GB'
     container 'cfrasier/epi-fiberseq:latest'
 
     input:
@@ -103,7 +109,8 @@ process sort_index_bams {
 
 process get_transition_stats {
     publishDir "$params.outdir/5_DAF-QC", mode: 'copy'
-    label 'small'
+    cpus 1
+    memory '4GB'
     container 'cfrasier/epi-dafseq:latest'
 
     input:
@@ -125,7 +132,8 @@ process get_transition_stats {
 
 process create_pileups {
     publishDir "$params.outdir/4_Pileups_Bigwigs/1_Pileups/"
-    label 'small'
+    cpus 1
+    memory '4GB'
     container 'cfrasier/epi-fiberseq:latest'
 
     input:
@@ -146,7 +154,8 @@ process create_pileups {
 
 process pileupbedgraphtobigwig_6ma{
     publishDir "$params.outdir/4_Pileups_Bigwigs/2_BigWigs/", mode: 'copy'
-    label 'small'
+    cpus 1
+    memory '4GB'
     container 'cfrasier/epi-fiberseq:latest'
 
     input:
@@ -163,7 +172,8 @@ process pileupbedgraphtobigwig_6ma{
 
 process pileupbedgraphtobigwig_5mC{
     publishDir "$params.outdir/4_Pileups_Bigwigs/2_BigWigs/", mode: 'copy'
-    label 'small'
+    cpus 1
+    memory '4GB'
     container 'cfrasier/epi-fiberseq:latest'
 
     input:
@@ -180,7 +190,8 @@ process pileupbedgraphtobigwig_5mC{
 
 process pileupbedgraphtobigwig_nuc{
     publishDir "$params.outdir/4_Pileups_Bigwigs/2_BigWigs/", mode: 'copy'
-    label 'small'
+    cpus 1
+    memory '4GB'
     container 'cfrasier/epi-fiberseq:latest'
 
     input:
@@ -218,8 +229,17 @@ workflow{
         exit 1
     }
 
-    input_ch = channel.fromPath("${params.input_path}/*${params.input_string_filter}*.fastq")
-    input_ch.map { file -> tuple( file.baseName.split('\\.')[0], file ) }.set{input_fastq_names_ch}
+    if (!params.input_path) {
+        println "Please provide an input path with --input_path"
+        exit 1
+    }
+    if (!params.input_string_filter) {
+        input_ch = channel.fromPath("${params.input_path}/*.fastq")
+    }
+    else {
+        input_ch = channel.fromPath("${params.input_path}/*${params.input_string_filter}*.fastq")
+    }
+    input_ch.map { file -> tuple( file.baseName.split('.fastq')[0], file ) }.set{input_fastq_names_ch}
     input_fastq_names_ch.view()
     align_reads(input_fastq_names_ch, ref_mmi)
     label_reads(align_reads.out)
