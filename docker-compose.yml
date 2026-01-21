@@ -1,0 +1,12 @@
+version: "3"
+services:
+  epi-pacbio:
+    image: "cfrasier/epi-pacbio:latest"
+    container_name: "epi-pacbio"
+  epi-dafseq:
+    image: "cfrasier/epi-dafseq:latest"
+    container_name: "epi-dafseq"
+
+
+
+  
