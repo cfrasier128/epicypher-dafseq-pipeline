@@ -225,6 +225,12 @@ workflow{
         ref_fasta = "/media/genomics/18Tb_1/references/mm10/GCF_000001635.27_GRCm39_genomic.fa"
         ref_fai = "/media/genomics/18Tb_1/references/mm10/GCF_000001635.27_GRCm39_genomic.fa.fai"
     }
+    else if (params.reference_genome == 'LS_ref') {
+        ref_mmi = "/media/genomics/18Tb_1/references/LS_dNuc/LS_ref.mmi"
+        ref_chromsizes = "/media/genomics/18Tb_1/references/LS_dNuc/LS_ref.fasta.chrom.sizes"
+        ref_fasta = "/media/genomics/18Tb_1/references/LS_dNuc/LS_ref.fasta"
+        ref_fai = "/media/genomics/18Tb_1/references/LS_dNuc/LS_ref.fasta.fai"
+    }
     else {
         exit 1
     }
