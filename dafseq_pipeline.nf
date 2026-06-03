@@ -112,6 +112,26 @@ process sort_index_bams {
     """
 }
 
+process split_reads {
+    publishDir "$params.outdir/5_DAF-QC", mode: 'copy'
+    cpus 4
+    memory '8GB'
+    container 'cfrasier/epi-dafseq:latest'
+
+    input:
+    tuple val(sample_id), path(bam_file), val(ref_name), val(bam_index)
+    output:
+    tuple val("${sample_id}_CT"), path("${sample_id}_CT.ambiguous.aligned.nucs.sorted.split.bam"), val(ref_name), path("${sample_id}_CT.ambiguous.aligned.nucs.sorted.split.bam.bai"), emit: ct_split_bam
+    tuple val("${sample_id}_GA"), path("${sample_id}_GA.ambiguous.aligned.nucs.sorted.split.bam"), val(ref_name), path("${sample_id}_GA.ambiguous.aligned.nucs.sorted.split.bam.bai"), emit: ga_split_bam
+    script:
+    """
+    samtools view -h $bam_file | grep -Pe "\tCT:|^@" | samtools view -b -o ${sample_id}_CT.ambiguous.aligned.nucs.sorted.split.bam -;
+    samtools view -h $bam_file | grep -Pe "\tGA:|^@" | samtools view -b -o ${sample_id}_GA.ambiguous.aligned.nucs.sorted.split.bam -;
+    samtools index -@ 8 ${sample_id}_CT.ambiguous.aligned.nucs.sorted.split.bam;
+    samtools index -@ 8 ${sample_id}_GA.ambiguous.aligned.nucs.sorted.split.bam
+    """
+}
+
 process get_transition_stats {
     publishDir "$params.outdir/5_DAF-QC", mode: 'copy'
     cpus 1
@@ -160,7 +180,15 @@ workflow{
     add_nucleosomes(convert_6ma.out)
     sort_index_bams(add_nucleosomes.out)
     get_transition_stats(label_reads.out)
+    if (params.split_reads) {
+        split_reads(sort_index_bams.out)
+        split_reads.out.ct_split_bam
+                .mix(split_reads.out.ga_split_bam).set{ create_bigwigs_input_ch }
+    }
+    else {
+        sort_index_bams.out.set{ create_bigwigs_input_ch }
+    }
     if (params.create_bigwigs) {
-        create_bigwigs(sort_index_bams.out, references_ch)
+        create_bigwigs(create_bigwigs_input_ch, references_ch)
     }
 }

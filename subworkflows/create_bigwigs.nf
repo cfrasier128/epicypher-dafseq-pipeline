@@ -14,11 +14,12 @@ process create_pileups {
     script:
     """
     ft pileup \
-    --m6a --ml $params.confidence_ml_val \
-    --cpg \
-    --per-base \
-    -t $task.cpus \
-    $aligned_bam | awk -v OFS="\t" -v FS="\t" '{print \$1,\$2,\$3,\$9/(\$4+0.1),\$10/(\$4+0.1),\$7/(\$4+0.1)}' > ${samp_name}.pileup_all.tsv
+        --m6a \
+        --cpg \
+        -t ${task.cpus} \
+        ${aligned_bam} \
+    | awk -v OFS="\t" -v FS="\t" '{print \$1,\$2,\$3,\$9/(\$4+0.1),\$10/(\$4+0.1),\$7/(\$4+0.1)}' \
+    | gzip -c > ${samp_name}.pileup_all.tsv.gz
     """
 }
 
@@ -66,6 +67,5 @@ workflow create_bigwigs {
             .concat(pileup_withref_ch.map { row -> tuple(row[0], row[1], row[2], row[3], "perccpg", 5) })
             .concat(pileup_withref_ch.map { row -> tuple(row[0], row[1], row[2], row[3], "percnuc", 6) })
             .set { pileup_bedgraph_ch }
-    pileup_withref_ch.view()
     pileupbedgraphtobigwig(pileup_bedgraph_ch)
 }
