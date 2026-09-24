@@ -51,8 +51,8 @@ Example: `inputs/sample_sheet.tsv`
 | samp_name | bam_path | ref_name | target_name |
 |-----------|----------|----------|----------|
 | sampleA | inputs/bams/a1/sampleA.bam | hg38 | ColoReg2 |
-| sampleA | inputs/bams/a2/sampleA.bam | hg38 | ColoReg2 |
-| sampleB | inputs/bams/b1/sampleB.bam | chm13 | NAPA |
+| sampleB | inputs/bams/a2/sampleB.bam | hg38 | ColoReg2 |
+| sampleC | inputs/bams/b1/sampleC.bam | chm13 | NAPA |
 
 
 Example `inputs/reference_sheet.tsv`:
