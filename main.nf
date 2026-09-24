@@ -127,7 +127,7 @@ process split_reads {
     container 'cfrasier/epi-dafseq:latest'
 
     input:
-    tuple val(sample_id), path(bam_file), val(ref_name), val(target_name), val(target_precision)
+    tuple val(sample_id), path(bam_file), val(ref_name), val(target_name), val(target_precision), path(bam_index)
     output:
     tuple val("${sample_id}_CT"), path("${sample_id}_CT.second_alignment.aligned.nucs.sorted.split.bam"), val(ref_name), path("${sample_id}_CT.second_alignment.aligned.nucs.sorted.split.bam.bai"), emit: ct_split_bam
     tuple val("${sample_id}_GA"), path("${sample_id}_GA.second_alignment.aligned.nucs.sorted.split.bam"), val(ref_name), path("${sample_id}_GA.second_alignment.aligned.nucs.sorted.split.bam.bai"), emit: ga_split_bam
@@ -191,9 +191,9 @@ workflow{
                 .mix(split_reads.out.ga_split_bam).set{ create_bigwigs_input_ch }
     }
     else {
-        sort_index_bams_on_target.out.set{ create_bigwigs_input_ch }
+        sort_index_bams_on_target.out.map{row -> tuple(row[0], row[1], row[2], row[5])}.set{ create_bigwigs_input_ch }
     }
     if (params.create_bigwigs) {
-        create_bigwigs(create_bigwigs_input_ch.map { row -> tuple(row[0], row[1], row[2], row[5]) }, references_ch)
+        create_bigwigs(create_bigwigs_input_ch.map { row -> tuple(row[0], row[1], row[2], row[3]) }, references_ch)
     }
 }
