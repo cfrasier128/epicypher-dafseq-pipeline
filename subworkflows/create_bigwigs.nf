@@ -24,7 +24,7 @@ process create_pileups {
 }
 
 process pileupbedgraphtobigwig {
-    publishDir "${params.outdir}/4_pileups/${samp_name}", mode: 'copy'
+    publishDir "${params.outdir}/6_pileups/${samp_name}", mode: 'copy'
     label 'medium'
     container 'quay.io/pacbio/bigtools:3844b58_build1'
 
